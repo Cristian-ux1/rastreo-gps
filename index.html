@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreo GPS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #007BFF;
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+            font-size: 18px;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+        }
+
+        #gps-link {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ubicación del Dispositivo GPS</h1>
+    <p>Haz clic en el enlace para ver la ubicación actual en Google Maps:</p>
+    <p id="gps-link"></p> <!-- Aquí se mostrará el enlace -->
+
+    <script>
+        function actualizarCoordenadas(nuevaLat, nuevaLon) {
+            const googleMapsLink = `https://maps.google.com?q=${nuevaLat},${nuevaLon}`;
+
+            // Forzar la apertura en una nueva pestaña
+            const linkElement = document.createElement("a");
+            linkElement.href = googleMapsLink;
+            linkElement.target = "_blank";
+            linkElement.textContent = "Ver en Google Maps";
+
+            document.getElementById("gps-link").innerHTML = "";
+            document.getElementById("gps-link").appendChild(linkElement);
+        }
+
+        // Ejemplo de actualización manual con coordenadas
+        actualizarCoordenadas(4.710989, -74.072090); // Coordenadas de ejemplo (Bogotá, Colombia)
+        
+    </script>
+</body>
+</html>
