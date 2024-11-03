@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rastreo GPS</title>
+    <title>Localiza tu perro 🐶</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,15 +45,32 @@
     </style>
 </head>
 <body>
-    <h1>Ubicación del Dispositivo GPS</h1>
+    <h1>Localiza tu perro 🐶</h1>
     <p>Haz clic en el enlace para ver la ubicación actual en Google Maps:</p>
     <p id="gps-link"></p> <!-- Aquí se mostrará el enlace -->
 
+    <!-- Incluir Firebase desde CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <script>
+        // Tu configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOtfibIG0Hz2tNqNbZisnyf8DGF9j4C_g",
+            authDomain: "gpscanino-c089b.firebaseapp.com",
+            databaseURL: "https://gpscanino-c089b-default-rtdb.firebaseio.com",
+            projectId: "gpscanino-c089b",
+            storageBucket: "gpscanino-c089b.firebasestorage.app",
+            messagingSenderId: "114759127574",
+            appId: "1:114759127574:web:2db4edcf3ace47d0df5b37"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         function actualizarCoordenadas(nuevaLat, nuevaLon) {
             const googleMapsLink = `https://maps.google.com?q=${nuevaLat},${nuevaLon}`;
-
-            // Forzar la apertura en una nueva pestaña
             const linkElement = document.createElement("a");
             linkElement.href = googleMapsLink;
             linkElement.target = "_blank";
@@ -63,9 +80,23 @@
             document.getElementById("gps-link").appendChild(linkElement);
         }
 
-        // Ejemplo de actualización manual con coordenadas
-        actualizarCoordenadas(4.710989, -74.072090); // Coordenadas de ejemplo (Bogotá, Colombia)
-        
+        function obtenerCoordenadas() {
+            const latitudRef = database.ref('coordenadas/latitud');
+            const longitudRef = database.ref('coordenadas/longitud');
+
+            latitudRef.on('value', (snapshot) => {
+                const latitud = snapshot.val();
+                longitudRef.once('value', (snapshot) => {
+                    const longitud = snapshot.val();
+                    if (latitud !== null && longitud !== null) {
+                        actualizarCoordenadas(latitud, longitud);
+                    }
+                });
+            });
+        }
+
+        // Iniciar la obtención de coordenadas
+        obtenerCoordenadas();
     </script>
 </body>
 </html>
