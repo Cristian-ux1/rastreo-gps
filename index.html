@@ -23,7 +23,7 @@
             font-size: 18px;
         }
 
-        a {
+        a, button {
             display: inline-block;
             padding: 10px 20px;
             margin-top: 20px;
@@ -33,9 +33,10 @@
             border-radius: 5px;
             transition: background-color 0.3s;
             cursor: pointer;
+            border: none; /* Sin borde para el botón */
         }
 
-        a:hover {
+        a:hover, button:hover {
             background-color: #0056b3;
         }
 
@@ -43,18 +44,20 @@
             margin-top: 30px;
         }
     </style>
+    <!-- Importar las bibliotecas de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js"></script>
 </head>
 <body>
     <h1>Localiza tu perro 🐶</h1>
     <p>Haz clic en el enlace para ver la ubicación actual en Google Maps:</p>
     <p id="gps-link"></p> <!-- Aquí se mostrará el enlace -->
 
-    <!-- Incluir Firebase desde CDN -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
+    <p>Última ubicación recibida:</p>
+    <button id="last-location-btn" onclick="verUltimaUbicacion()" style="display: none;"></button>
+
     <script>
-        // Tu configuración de Firebase
+        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDOtfibIG0Hz2tNqNbZisnyf8DGF9j4C_g",
             authDomain: "gpscanino-c089b.firebaseapp.com",
@@ -65,38 +68,51 @@
             appId: "1:114759127574:web:2db4edcf3ace47d0df5b37"
         };
 
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
+        // Inicializa Firebase
+        const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        function actualizarCoordenadas(nuevaLat, nuevaLon) {
-            const googleMapsLink = `https://maps.google.com?q=${nuevaLat},${nuevaLon}`;
-            const linkElement = document.createElement("a");
-            linkElement.href = googleMapsLink;
-            linkElement.target = "_blank";
-            linkElement.textContent = "Ver en Google Maps";
+        let ultimaLatitud;
+        let ultimaLongitud;
 
-            document.getElementById("gps-link").innerHTML = "";
-            document.getElementById("gps-link").appendChild(linkElement);
-        }
-
+        // Función para obtener las coordenadas de Firebase
         function obtenerCoordenadas() {
             const latitudRef = database.ref('coordenadas/latitud');
             const longitudRef = database.ref('coordenadas/longitud');
 
             latitudRef.on('value', (snapshot) => {
-                const latitud = snapshot.val();
+                ultimaLatitud = snapshot.val();
                 longitudRef.once('value', (snapshot) => {
-                    const longitud = snapshot.val();
-                    if (latitud !== null && longitud !== null) {
-                        actualizarCoordenadas(latitud, longitud);
-                    }
+                    ultimaLongitud = snapshot.val();
+                    actualizarCoordenadas(ultimaLatitud, ultimaLongitud);
                 });
             });
         }
 
-        // Iniciar la obtención de coordenadas
-        obtenerCoordenadas();
+        function actualizarCoordenadas(nuevaLat, nuevaLon) {
+            const googleMapsLink = `https://maps.google.com?q=${nuevaLat},${nuevaLon}`;
+
+            // Crear el enlace
+            const linkElement = document.createElement("a");
+            linkElement.href = googleMapsLink;
+            linkElement.target = "_blank";
+            linkElement.textContent = "Ver en Google Maps";
+
+            document.getElementById("gps-link").innerHTML = ""; // Limpiar el contenido anterior
+            document.getElementById("gps-link").appendChild(linkElement); // Agregar el nuevo enlace
+
+            // Actualizar el botón con la última ubicación
+            document.getElementById("last-location-btn").style.display = "inline-block"; // Mostrar el botón
+            document.getElementById("last-location-btn").textContent = `Última ubicación: ${nuevaLat}, ${nuevaLon}`; // Actualizar texto del botón
+        }
+
+        function verUltimaUbicacion() {
+            const googleMapsLink = `https://maps.google.com?q=${ultimaLatitud},${ultimaLongitud}`;
+            window.open(googleMapsLink, "_blank");
+        }
+
+        // Llamar a la función al cargar la página
+        window.onload = obtenerCoordenadas;
     </script>
 </body>
 </html>
